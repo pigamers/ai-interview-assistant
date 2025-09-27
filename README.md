@@ -88,25 +88,33 @@ An intelligent interview platform that automates the technical interview process
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
+ai-interview-assistant/
+├── public/
+│   └── vite.svg                # Vite logo
+├── src/
+│   ├── assets/
+│   │   └── react.svg           # React logo
 │   ├── App.jsx                 # Main application component
+│   ├── App.css                 # Global styles
+│   ├── index.css               # Base styles
+│   ├── main.jsx                # Application entry point
+│   ├── aiService.js            # AI integration (Groq)
+│   ├── ResumeUpload.jsx        # File upload and processing
 │   ├── IntervieweePage.jsx     # Candidate interface
 │   ├── InterviewerPage.jsx     # Dashboard for interviewers
-│   ├── ResumeUpload.jsx        # File upload and processing
 │   ├── InterviewChat.jsx       # Interview interface
 │   ├── WelcomeBackModal.jsx    # Resume interview modal
-│   └── InfoCollection.jsx      # Candidate info form
-├── services/
-│   └── aiService.js            # AI integration (Groq)
-├── store/
+│   ├── InfoCollection.jsx      # Candidate info form
 │   ├── store.js                # Redux store configuration
 │   ├── interviewSlice.js       # Interview state management
 │   ├── candidatesSlice.js      # Candidate data management
 │   └── storageUtils.js         # Local storage utilities
-└── styles/
-    ├── App.css                 # Global styles
-    └── index.css               # Base styles
+├── .env                        # Environment variables (not in git)
+├── .env.example                # Environment variables template
+├── .gitignore                  # Git ignore rules
+├── package.json                # Dependencies and scripts
+├── vite.config.js              # Vite configuration
+└── README.md                   # Project documentation
 ```
 
 ## 🔧 Configuration
