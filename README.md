@@ -156,6 +156,8 @@ ai-interview-assistant/
 - **PDF Text Extraction**: Reliable document processing
 - **Multi-format Support**: PDF and DOCX compatibility
 
+> **⚠️ Note**: ApyHub free tier allows only **5 API calls per day**. For production use, consider upgrading to a paid plan or implementing alternative PDF processing solutions.
+
 ## 📊 Performance Features
 
 - **Lazy Loading**: Optimized component loading

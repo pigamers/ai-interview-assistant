@@ -54,7 +54,7 @@ const InterviewerPage = () => {
   ];
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 16px' }}>
       <Card title="Interviewer Dashboard">
         <Input
           placeholder="Search candidates..."
@@ -72,6 +72,7 @@ const InterviewerPage = () => {
             onClick: () => setSelectedCandidate(record),
           })}
           style={{ cursor: 'pointer' }}
+          scroll={{ x: 600 }}
         />
       </Card>
 

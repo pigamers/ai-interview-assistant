@@ -79,7 +79,7 @@ const InterviewChat = () => {
     
     try {
       // console.log('🔄 Calling generateQuestion...');
-      const question = await generateQuestion(difficulty, currentQuestion + 1);
+      const question = await generateQuestion(difficulty, questions.length + 1);
       // console.log('✅ Question generated:', question);
       
       dispatch(addQuestion({ text: question, difficulty, timestamp: Date.now() }));
@@ -88,8 +88,13 @@ const InterviewChat = () => {
       if (question && question.trim()) {
         // console.log('💬 Adding question to messages');
         setMessages(prev => {
-          const newMessages = [...prev, { type: 'question', content: question, difficulty }];
-          // console.log('📝 Updated messages:', newMessages);
+          const questionNumber = questions.length + 1;
+          const newMessages = [...prev, { 
+            type: 'question', 
+            content: `Q${questionNumber}: ${question}`, 
+            difficulty,
+            questionNumber 
+          }];
           return newMessages;
         });
       } else {
@@ -131,7 +136,8 @@ const InterviewChat = () => {
         type: 'answer', 
         content: answer, 
         score,
-        feedback 
+        feedback,
+        difficulty: currentQ.difficulty
       }]);
       
       setCurrentAnswer('');
@@ -161,51 +167,67 @@ const InterviewChat = () => {
     clearTimeout(timerRef.current);
     dispatch(pauseTimer());
     
-    const totalScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
-    const maxPossibleScore = 120; // 2*10 + 2*20 + 2*30 = 120
-    const finalScore = Math.round((totalScore / maxPossibleScore) * 100);
-    
-    try {
-      const summary = await generateSummary(candidate, questions, answers);
+    // Wait a bit to ensure the last answer is in messages
+    setTimeout(async () => {
+      const totalScore = answers.reduce((sum, answer) => sum + (answer.score || 0), 0);
+      const maxPossibleScore = 120; // 2*10 + 2*20 + 2*30 = 120
+      const finalScore = Math.round((totalScore / maxPossibleScore) * 100);
       
-      const updatedCandidate = {
-        ...candidate,
-        finalScore,
-        summary,
-        chatHistory: messages,
-        completedAt: new Date().toISOString(),
-      };
-      
-      console.log('💾 Updating candidate with final score:', updatedCandidate);
-      dispatch(updateCandidate(updatedCandidate));
-      dispatch(setStage('completed'));
-      
-      setMessages(prev => [...prev, { 
-        type: 'system', 
-        content: `Interview completed! Your final score is ${finalScore}/100.\n\n${summary}` 
-      }]);
-    } catch (error) {
-      console.error('Failed to generate summary:', error);
-      
-      const updatedCandidate = {
-        ...candidate,
-        finalScore,
-        summary: `Interview completed with a score of ${finalScore}/100. AI summary generation failed.`,
-        chatHistory: messages,
-        completedAt: new Date().toISOString(),
-      };
-      
-      dispatch(updateCandidate(updatedCandidate));
-      dispatch(setStage('completed'));
-      
-      setMessages(prev => [...prev, { 
-        type: 'system', 
-        content: `Interview completed! Your final score is ${finalScore}/100.` 
-      }, {
-        type: 'error',
-        content: `❌ ${error.message}`
-      }]);
-    }
+      try {
+        const summary = await generateSummary(candidate, questions, answers);
+        
+        const completionMessage = { 
+          type: 'system', 
+          content: `Interview completed! Your final score is ${finalScore}/100.\n\n${summary}` 
+        };
+        
+        setMessages(currentMessages => {
+          const finalMessages = [...currentMessages, completionMessage];
+          
+          const updatedCandidate = {
+            ...candidate,
+            finalScore,
+            summary,
+            chatHistory: finalMessages,
+            completedAt: new Date().toISOString(),
+          };
+          
+          console.log('💾 Updating candidate with final score and complete chat:', updatedCandidate);
+          dispatch(updateCandidate(updatedCandidate));
+          
+          return finalMessages;
+        });
+        
+        dispatch(setStage('completed'));
+        
+      } catch (error) {
+        console.error('Failed to generate summary:', error);
+        
+        setMessages(currentMessages => {
+          const finalMessages = [...currentMessages, {
+            type: 'system',
+            content: `Interview completed! Your final score is ${finalScore}/100.`
+          }, {
+            type: 'error',
+            content: `❌ ${error.message}`
+          }];
+          
+          const updatedCandidate = {
+            ...candidate,
+            finalScore,
+            summary: `Interview completed with a score of ${finalScore}/100. AI summary generation failed.`,
+            chatHistory: finalMessages,
+            completedAt: new Date().toISOString(),
+          };
+          
+          dispatch(updateCandidate(updatedCandidate));
+          
+          return finalMessages;
+        });
+        
+        dispatch(setStage('completed'));
+      }
+    }, 100); // Small delay to ensure last answer is in messages
   };
 
   if (stage === 'completed') {
@@ -228,7 +250,7 @@ const InterviewChat = () => {
         title={
           <Space>
             <span>Interview Progress</span>
-            <Tag color="blue">{currentQuestion}/6 Questions</Tag>
+            <Tag color="blue">{currentQuestion + 1}/6 Questions</Tag>
             {timeLeft > 0 && (
               <Tag color={timeLeft <= 10 ? 'red' : 'orange'} icon={<ClockCircleOutlined />}>
                 {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
@@ -237,7 +259,7 @@ const InterviewChat = () => {
           </Space>
         }
       >
-        <Progress percent={Math.round((currentQuestion / 6) * 100 * 100) / 100} style={{ marginBottom: '20px' }} />
+        <Progress percent={Math.round(((currentQuestion + 1) / 6) * 100 * 100) / 100} style={{ marginBottom: '20px' }} />
         
         <div style={{ height: '400px', overflowY: 'auto', marginBottom: '20px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '6px' }}>
           {messages.map((msg, idx) => (
