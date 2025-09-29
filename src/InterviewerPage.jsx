@@ -94,15 +94,24 @@ const InterviewerPage = () => {
             {selectedCandidate.summary && (
               <>
                 <Title level={4}>AI Summary</Title>
-                <Text>{selectedCandidate.summary}</Text>
+                <div style={{ 
+                  backgroundColor: '#f9f9f9', 
+                  padding: '12px', 
+                  borderRadius: '6px', 
+                  marginBottom: '16px',
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: '1.6'
+                }}>
+                  <Text>{selectedCandidate.summary}</Text>
+                </div>
               </>
             )}
             
             {selectedCandidate.chatHistory && (
               <>
-                <Title level={4}>Interview History</Title>
+                <Title level={4}>Chat History</Title>
                 <div style={{ maxHeight: '300px', overflow: 'auto' }}>
-                  {selectedCandidate.chatHistory.map((msg, idx) => (
+                  {selectedCandidate.chatHistory.filter(msg => msg.type !== 'system').map((msg, idx) => (
                     <div key={`chat-${idx}-${msg.type}`} style={{ marginBottom: '10px', padding: '8px', backgroundColor: msg.type === 'question' ? '#f0f0f0' : '#e6f7ff', borderRadius: '4px' }}>
                       <strong>{msg.type === 'question' ? 'AI:' : 'Candidate:'}</strong> {msg.content}
                       {msg.score !== undefined && (
@@ -110,7 +119,7 @@ const InterviewerPage = () => {
                           Score: {msg.score}/{msg.difficulty === 'easy' ? 10 : msg.difficulty === 'medium' ? 20 : 30}
                         </Tag>
                       )}
-                      {msg.difficulty && <Tag color="purple">{msg.difficulty.toUpperCase()}</Tag>}
+                      {msg.type === 'question' && msg.difficulty && <Tag color="purple">{msg.difficulty.toUpperCase()}</Tag>}
                     </div>
                   ))}
                 </div>

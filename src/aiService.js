@@ -110,18 +110,21 @@ export const generateSummary = async (candidateData, questions, answers) => {
     const totalScore = answers.reduce((sum, ans) => sum + (ans.score || 0), 0);
     const avgScore = Math.round(totalScore / answers.length);
 
-    const prompt = `Create a professional interview summary for this candidate:
+    const prompt = `Create a professional interview evaluation summary for this candidate within 200 words:
 
 Candidate: ${candidateData.name}
-Overall Score: ${avgScore}/100
+Final Score: ${avgScore}%
 
 Interview Performance:
-${questions.map((q, i) => `Q${i + 1} (${q.difficulty}): ${q.text}\nAnswer: ${answers[i]?.text || 'No answer provided'}\nScore: ${answers[i]?.score || 0}/100`).join('\n\n')}
+${questions.map((q, i) => `Q${i + 1} (${q.difficulty}): ${q.text}\nAnswer: ${answers[i]?.text || 'No answer provided'}\nScore: ${answers[i]?.score || 0}/${q.difficulty === 'easy' ? 10 : q.difficulty === 'medium' ? 20 : 30}`).join('\n\n')}
 
-Provide a concise 2-3 sentence professional summary highlighting:
-- Overall technical competency
-- Key strengths or areas for improvement
-- Hiring recommendation context`;
+Provide a structured summary with:
+1. Technical Competency Assessment
+2. Key Strengths and Areas for Improvement
+3. Overall Performance Analysis
+4. Hiring Recommendation with clear conclusion
+
+Keep it within 200 words and end with a definitive hiring decision.`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [
@@ -130,7 +133,7 @@ Provide a concise 2-3 sentence professional summary highlighting:
       ],
       model: 'llama-3.1-8b-instant',
       temperature: 0.5,
-      max_tokens: 150,
+      max_tokens: 300,
     });
 
     return chatCompletion.choices[0].message.content.trim();
